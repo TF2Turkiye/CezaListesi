@@ -4,6 +4,7 @@ define("IN_MYBB", 1);
 define("THIS_SCRIPT", "cezalistesi.php");
 
 require_once('./global.php');
+require_once MYBB_ROOT . 'inc/plugins/cezalistesi/functions.php';
 
 $lang->load("global");
 $lang->load("cezalistesi");
