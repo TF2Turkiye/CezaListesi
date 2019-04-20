@@ -4,7 +4,6 @@ $plugins->add_hook('misc_start', 'liste');
 if(!defined("IN_MYBB")) {
     die("Yanlis yerdesin!");
 }
-require ('cezalistesi/functions.php');
 function cezalistesi_info()
 {
     return array(
