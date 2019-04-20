@@ -14,14 +14,41 @@ add_breadcrumb($lang->cezalistesi, 'cezalistesi.php');
 // MENU
 $arrayName = array(
     'cezalistesi.php' => 'Ceza Listesi',
-    'cezalistesi.php?page=add' => 'Yeni Ban Ekle'
+    'cezalistesi.php?page=add' => 'Yeni Ban Ekle',
+    'cezalistesi.php?action=harita' => 'Harita Döngüleri'
 );
 // //
 
 if($mybb->get_input('action') == '')
 {   
 
-    $query = $db->query("SELECT COUNT(bid) as total FROM ceza_bans");
+    if($mybb->get_input('arama')) {
+        $bid = $_GET['arama'];
+        // $query = $db->query("SELECT COUNT(bid) as total FROM tf2turkiye_ceza.ceza_bans WHERE authid = '$bid'");
+
+        $bid = $_GET['arama'];
+        switch ($_GET['yontem']) {
+            case 'steamid':
+                $query = $db->query("SELECT COUNT(bid) as total FROM tf2turkiye_ceza.ceza_bans WHERE authid = '$bid'");
+                break;
+            case 'nick':
+                $query = $db->query("SELECT COUNT(bid) as total FROM tf2turkiye_ceza.ceza_bans WHERE name = '$bid'");
+                break;
+            case 'sebep':
+                $query = $db->query("SELECT COUNT(bid) as total FROM tf2turkiye_ceza.ceza_bans WHERE reason = '%$bid%'");
+                break;
+            case 'sure':
+                $query = $db->query("SELECT COUNT(bid) as total FROM tf2turkiye_ceza.ceza_bans WHERE length = '$bid'");
+                break;
+            
+            default:
+                $query = $db->query("SELECT COUNT(bid) as total FROM tf2turkiye_ceza.ceza_bans WHERE authid = '$bid'");
+                break;
+        }
+    }
+    else {
+        $query = $db->query("SELECT COUNT(bid) as total FROM tf2turkiye_ceza.ceza_bans");
+    }
     $total = $db->fetch_field($query, "total");
 
     if($mybb->settings['ppp']) // Using posts per page.  tpp for threads per page
@@ -59,7 +86,34 @@ if($mybb->get_input('action') == '')
     $offset = 0;
     }
 
-    $query = $db->query("SELECT * FROM ceza_bans ORDER BY bid DESC LIMIT $offset, $perpage");
+
+    if($mybb->get_input('arama')) {
+        $bid = $_GET['arama'];
+        switch ($_GET['yontem']) {
+            case 'steamid':
+                $query = $db->query("SELECT * FROM tf2turkiye_ceza.ceza_bans WHERE authid = '$bid' ORDER BY bid DESC LIMIT $offset, $perpage");
+                break;
+            case 'nick':
+                $query = $db->query("SELECT * FROM tf2turkiye_ceza.ceza_bans WHERE name = '$bid' ORDER BY bid DESC LIMIT $offset, $perpage");
+                break;
+            case 'sebep':
+                $query = $db->query("SELECT * FROM tf2turkiye_ceza.ceza_bans WHERE reason LIKE '%$bid%' ORDER BY bid DESC LIMIT $offset, $perpage");
+                break;
+            case 'sure':
+                $query = $db->query("SELECT * FROM tf2turkiye_ceza.ceza_bans WHERE `length` = '$bid' ORDER BY bid DESC LIMIT $offset, $perpage");
+                break;
+            
+            default:
+                $query = $db->query("SELECT * FROM tf2turkiye_ceza.ceza_bans WHERE authid = '$bid' ORDER BY bid DESC LIMIT $offset, $perpage");
+                break;
+        }
+        $lang->cl_istatistik = $lang->sprintf($lang->cl_istatistik, $total, $offset, $total);
+    }
+    else {
+        $query = $db->query("SELECT * FROM tf2turkiye_ceza.ceza_bans ORDER BY bid DESC LIMIT $offset, $perpage");
+        $lang->cl_istatistik = $lang->sprintf($lang->cl_istatistik, $total, $offset, $offset+$perpage);
+    }
+
     while($sonuc = $db->fetch_array($query))
     {
         $tarih = my_date('relative', $sonuc['created']);
@@ -67,8 +121,8 @@ if($mybb->get_input('action') == '')
         $sebep = strimwidth($sonuc['reason'], 40);
 
         $bid = $sonuc['bid'];
-        $yetkililer_q = $db->query('SELECT ceza_bans.bid, ceza_bans.aid, ceza_admins.aid , ceza_admins.user, ceza_admins.gid 
-        FROM ceza_bans INNER JOIN ceza_admins ON ceza_bans.aid = ceza_admins.aid WHERE bid="' . $bid . '"');
+        $yetkililer_q = $db->query('SELECT tf2turkiye_ceza.ceza_bans.bid, tf2turkiye_ceza.ceza_bans.aid, tf2turkiye_ceza.ceza_admins.aid , tf2turkiye_ceza.ceza_admins.user, tf2turkiye_ceza.ceza_admins.gid 
+        FROM tf2turkiye_ceza.ceza_bans INNER JOIN tf2turkiye_ceza.ceza_admins ON tf2turkiye_ceza.ceza_bans.aid = tf2turkiye_ceza.ceza_admins.aid WHERE bid="' . $bid . '"');
         while($yetkililer = $db->fetch_array($yetkililer_q))
         {
             $yetkili_adi = yetkili_adi(strimwidth($yetkililer['user']), $yetkililer['gid']);
@@ -79,8 +133,8 @@ if($mybb->get_input('action') == '')
 
             
         $sid = $sonuc['sid'];
-        $sunucular_q = $db->query('SELECT ceza_bans.sid, ceza_servers.sid, ceza_servers.ip 
-        FROM ceza_bans INNER JOIN ceza_servers ON ceza_bans.sid = ceza_servers.sid WHERE ceza_bans.sid="' . $sid . '"');
+        $sunucular_q = $db->query('SELECT tf2turkiye_ceza.ceza_bans.sid, tf2turkiye_ceza.ceza_servers.sid, tf2turkiye_ceza.ceza_servers.ip 
+        FROM tf2turkiye_ceza.ceza_bans INNER JOIN tf2turkiye_ceza.ceza_servers ON tf2turkiye_ceza.ceza_bans.sid = tf2turkiye_ceza.ceza_servers.sid WHERE tf2turkiye_ceza.ceza_bans.sid="' . $sid . '"');
         while($sunucular = $db->fetch_array($sunucular_q))
         {
             $sunucu_adi = sunucu_adi(strimwidth($sunucular['ip']), $sunucular['sid']);
@@ -88,12 +142,18 @@ if($mybb->get_input('action') == '')
         if($sunucu_adi == "")
             $sunucu_adi = '<span class="font-weight-normal fz-11">' . $lang->sunucu_silinmis . '</span>';
 
-        if($sonuc['ends'] > TIME_NOW)
-            $kalanzaman = '<span class="d-block bg-info text-white shadow-sm rounded p-1 fz-10"><i class="fas fa-clock mx-2"></i>' . str_replace("İçinde","",my_date('relative', $sonuc['ends'])) . $lang->kaldi . '</span>';
-        else if($sonuc['length'] == 0)
+        if($sonuc['ends'] > TIME_NOW && $sonuc['ends'] < strtotime('+1 day', TIME_NOW) ) {
+            $kalanzaman = '<span class="d-block bg-info text-white shadow-sm rounded p-1 fz-10"><i class="fas fa-clock mx-2"></i>' . str_replace("İçinde","",my_date('relative', $sonuc['ends'], 0, 0)) . $lang->kaldi. '</span>';
+        }
+        else if($sonuc['ends'] > strtotime('+1 day', TIME_NOW) ) {
+            $kalanzaman = '<span class="d-block bg-info text-white shadow-sm rounded p-1 fz-10"><i class="fas fa-clock mx-2"></i>' . secondsToTime($sonuc['length']) .  $lang->kaldi. '</span>';
+        }
+        else if($sonuc['length'] == 0) {
             $kalanzaman = '<span class="d-block bg-danger text-white shadow-sm rounded p-1 fz-10 text-center"><i class="fas fa-infinity mx-2"></i> </span>';
-        else
+        }
+        else {
             $kalanzaman = '<span class="d-block bg-success text-white shadow-sm rounded p-1 fz-10"><i class="fas fa-check mx-2"></i>' . $lang->suredoldu . '</span>';
+        }
 
         // ACCORDION
             $steamid64    = steamid64($sonuc['authid']); 
@@ -111,6 +171,7 @@ if($mybb->get_input('action') == '')
         {
             $duzenle = '<a href="' . $mybb->settings['bburl'] . '/cezalistesi.php?action=edit&bid=' . $sonuc['bid'] . '">'. $lang->duzenle .'</a>';
             if($mybb->usergroup['issupermod'] == 1 ? $kaldir = '<a href="' . $mybb->settings['bburl'] . '/cezalistesi.php?action=unban&bid=' . $sonuc['bid'] . '">'. $lang->kaldir .'</a>' : '');
+            if($mybb->usergroup['cancp'] == 1 ? $sil = '<a href="' . $mybb->settings['bburl'] . '/cezalistesi.php?action=delete&bid=' . $sonuc['bid'] . '">'. $lang->sil .'</a>' : '');
         }
 
 
@@ -119,141 +180,22 @@ if($mybb->get_input('action') == '')
 
     
     
-    $lang->cl_istatistik = $lang->sprintf($lang->cl_istatistik, $total, $offset, $offset+$perpage);
+
 
     eval('$anasablon  = "' . $templates->get('cl_anasayfa', 1, 0) . '";');
     output_page($anasablon);
 
 }
 
-if($mybb->get_input('action') != '')
+if($mybb->get_input('action') == 'delete')
 {   
-    $bid = $mybb->get_input('bid');
-    $yetkililer_q = $db->query('SELECT ceza_bans.bid, ceza_bans.aid, ceza_admins.aid , ceza_admins.user, ceza_admins.gid, ceza_admins.authid
-    FROM ceza_bans INNER JOIN ceza_admins ON ceza_bans.aid = ceza_admins.aid WHERE bid="' . $bid . '"');
-    while($yetkililer = $db->fetch_array($yetkililer_q))
-    {
-        $yetkili_authid = $yetkililer['authid'];
-    }
-    // KONTROL
-    if($yetkili_authid != steamid32($mybb->user['loginname']))
-    {
-        if( $mybb->usergroup['issupermod'] != 1 )
-            error_no_permission();
-    }
-    // //
-    
-    foreach ($arrayName as $key => $value) {
 
-        eval("\$cl_nav_row .= \"".$templates->get("cl_nav_row")."\";");
+    $bid = $_GET['bid'];
+
+    if(isset($_POST['sil_dugme'])) {
+        $db->query("DELETE FROM tf2turkiye_ceza.ceza_bans WHERE bid='".$bid."'");
     }
 
-
-    eval('$cl_nav  = "' . $templates->get('cl_nav', 1, 0) . '";');
-}
-if($mybb->get_input('action') == 'edit')
-{
-    
-    $url = $_SERVER['REQUEST_URI'];
-    add_breadcrumb($lang->duzenle, $url);
-
-    $query = $db->query("SELECT * FROM ceza_bans WHERE bid ='" . $bid . "'");
-    $sonuc = $db->fetch_array($query);
-
-    if($db->num_rows($query) <= 0) {
-        error($lang->kayitbulunamadi, $lang->error);
-        exit();
-    }
-
-    if($_POST['name']    != '' ? $name = $_POST['name']       : $name = $sonuc['name']);
-    if($_POST['authid']  != '' ? $authid = $_POST['authid']   : $authid = $sonuc['authid']);
-    if($_POST['ip']      != '' ? $ip = $_POST['ip']           : $ip = $sonuc['ip']);
-    if($_POST['reason']  != '' ? $reason = $_POST['reason']   : $reason = $sonuc['reason']);
-    if($_POST['length']  != '' ? $length = $_POST['length']   : $length = $sonuc['length']);
-
-    $query = $db->query("SELECT name FROM ceza_bansebebi");
-    while($ceza = $db->fetch_array($query))
-    {
-        $value = $ceza['name'];
-        
-        if($reason == $value)
-            $sec = 'selected';
-        else
-            $sec = '';
-
-        eval("\$bansebepleri_row .= \"".$templates->get("cl_bansebebi_row")."\";");
-    }
-
-    if($_POST['reason'] == 'Diğer') {
-        if($_POST['other'] != '')
-            $new_reason = htmlspecialchars($_POST['other']);
-        else
-            $bildiri = hata($lang->cezasebebiyok);
-    }
-    else {
-        $new_reason = $_POST['reason'];
-    }
-    if($count == 0 ? eval("\$other .= \"".$templates->get("cl_bansebebi_other")."\";") : '');
-
-    $query = $db->query("SELECT length FROM ceza_bansebebi");
-    while($ceza = $db->fetch_array($query))
-    {
-        $value = $ceza['length'];
-        $minutes = $lang->dakika;
-
-        if($length == $value)
-            $sec = 'selected';
-        else
-            $sec = '';
-
-        eval("\$banssureleri_row .= \"".$templates->get("cl_bansebebi_row")."\";");
-    }
-
-    if($_POST['submit']) {
-        $query = $db->query("UPDATE ceza_bans SET name = '" . $name . "', ip = '" . $ip . "', reason = '" . $new_reason . "', length = '" . $length . "' WHERE bid ='" . $bid . "'");
-        redirect($_SERVER['REQUEST_URI']. '&onay=1', $lang->kaydedildi, $lang->forum_redirect, true);
-    }
-    if($mybb->get_input('onay') == '1')
-        $bildiri = onay($lang->kaydedildi);
-
-
-    eval('$cl_edit  = "' . $templates->get('cl_edit', 1, 0) . '";');
-    output_page($cl_edit);
-}
-
-if($mybb->get_input('action') == 'unban')
-{
-    $url = $_SERVER['REQUEST_URI'];
-    add_breadcrumb($lang->cezakaldir, $url);
-    if( $mybb->usergroup['issupermod'] != 1 )
-        error_no_permission();
-    
-    if( $mybb->get_input('bid') == '' )
-        redirect($_SERVER['REQUEST_URI'], $lang->unknown_error,$lang->error, true);
-    else
-      $bid = $mybb->get_input('bid');
-
-    $query = $db->query("SELECT * FROM ceza_bans WHERE bid ='" . $bid . "'");
-    $sonuc = $db->fetch_array($query);
-
-    if($db->num_rows($query) <= 0) {
-        error($lang->kayitbulunamadi, $lang->error);
-        exit();
-    }
-    
-    if($_POST['submit'])
-    {
-        if($_POST['kaldir_dugme'] != '') {
-            $db->query("DELETE FROM ceza_bans
-            WHERE bid = '" . $bid . "'");
-            redirect($_SERVER['REQUEST_URI'], $lang->cezayikaldironay, $lang->cezayikaldironaybaslik, true);
-        }
-        else {
-            $bildiri = hata($lang->cezayikaldirret);
-        }
-    }
-
-
-    eval("\$cl_unban .= \"".$templates->get("cl_unban")."\";");
-    output_page($cl_unban);
+    eval('$anasablon  = "' . $templates->get('cl_delete', 1, 0) . '";');
+    output_page($anasablon);
 }
