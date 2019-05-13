@@ -1,6 +1,8 @@
 <?php
 
 $l['cezalistesi'] = 'Ceza Listesi';
+$l['banlistesi'] = 'Ban Listesi';
+$l['iletisimlistesi'] = 'İletişim Listesi';
 $l['ulke'] = 'Ülke';
 $l['cezatarihi'] = 'Ceza Tarih';
 $l['oyuncuadi'] = 'Oyuncu Adı';
@@ -29,7 +31,10 @@ $l['kaydet'] = 'Değişiklikleri Kaydet';
 $l['duzenle'] = 'Düzenle';
 $l['sil'] = 'Sil';
 $l['kaldir'] = 'Kaldır';
+$l['ekle'] = 'Ekle';
 $l['cezakaldir'] = 'Cezayı kaldır';
+$l['cezasil'] = 'Cezayı sil';
+$l['cezaekle'] = 'Ceza ekle';
 $l['oyuncu_adi'] = 'Oyuncu Adı';
 $l['steamid'] = 'SteamID';
 
@@ -41,5 +46,19 @@ $l['cezasebebiyok'] = 'Ceza sebebini girmelisiniz.';
 
 $l['cezayikaldir'] = 'Cezayı kaldırmak istediğine eminmisin?';
 $l['cezayikaldironaybaslik'] = 'Ceza başarıyla kaldırıldı.';
-$l['cezayikaldironay'] = 'Başlangıç sayfasına yönlendiriliorsun.';
+$l['cezayikaldironay'] = 'Başlangıç sayfasına yönlendiriliyorsun.';
 $l['cezayikaldirret'] = 'Cezayı kaldırırken hata oluştu.';
+
+$l['cezayisil'] = 'Cezayı silmek istediğine eminmisin?';
+$l['cezayikaldironaybaslik'] = 'Ceza başarıyla silindi.';
+$l['cezayikaldironay'] = 'Başlangıç sayfasına yönlendiriliyorsun.';
+$l['cezayikaldirret'] = 'Cezayı silerken hata oluştu.';
+
+$l['hataip'] = 'IP adresini belirteceksen doğru belirtmelisin. Elinde IP adresi yoksa boş bırakabilirsin';
+$l['hataauthid'] = 'SteamID adresini doğru belirtmelisin. Örnek <b>STEAM_0:0:11111111</b>'; 
+
+$l['unbanreason'] = 'Kaldırılma sebebi';
+$l['yetkilinotu'] = 'Yetkili notu'; // SONRA EKLENECEK
+
+$l['cezaveren'] = 'Ceza Veren:';
+$l['cezasebebi2'] = 'Ceza Sebebi:';
